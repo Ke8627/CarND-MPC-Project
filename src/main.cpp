@@ -65,6 +65,21 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
   return result;
 }
 
+template<typename T>
+void printList(const vector<T>& list, const char* name)
+{
+  if (name != nullptr)
+  {
+    cout << name << ":";
+  }
+
+  for (const T& t: list)
+  {
+    cout << t;
+  }
+  cout << endl;
+}
+
 int main() {
   uWS::Hub h;
 
@@ -92,14 +107,18 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
+          printList(ptsx, "ptsx");
+          printList(ptsy, "ptsy");
+          std::cout << "px, py, psi, v: " << px << py << psi << v << std::endl;
+
           /*
           * TODO: Calculate steering angle and throttle using MPC.
           *
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+          double steer_value = 0;
+          double throttle_value = 0.3;
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
