@@ -80,6 +80,40 @@ void printList(const vector<T>& list, const char* name)
   cout << endl;
 }
 
+Eigen::VectorXd ConvertToVectorXd(const std::vector<double>& pts)
+{
+  Eigen::VectorXd vec(pts.size());
+  for (size_t i = 0; i < pts.size(); i++)
+  {
+    vec[i] = pts[i];
+  }
+  return vec;
+}
+
+void CalculateWaypoints(const Eigen::VectorXd& poly, 
+        const double xcar,
+        const double ycar,
+        vector<double>& xway,
+        vector<double>& yway)
+{
+  const int c_waypointCount = 6;
+  for (int x = 0; x < c_waypointCount; x++)
+  {
+    double y = polyeval(poly, static_cast<double>(x) + xcar) - ycar;
+
+    xway.push_back(x);
+    yway.push_back(y);
+  }
+}
+
+void Translate(vector<double>& pts, double shift)
+{
+  for (auto& p : pts)
+  {
+    p -= shift;
+  }
+}
+
 int main() {
   uWS::Hub h;
 
@@ -107,9 +141,15 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
+          Translate(ptsx, px);
+          Translate(ptsy, py);
+
           printList(ptsx, "ptsx");
           printList(ptsy, "ptsy");
-          std::cout << "px, py, psi, v: " << px << py << psi << v << std::endl;
+          std::cout << "px, py, psi, v: " << px << ',' << py << ',' << psi << ',' << v << std::endl;
+
+          auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
+          std::cout << "poly: " << poly[0] << ',' << poly[1] << ',' << poly[2] << ',' << poly[3] << std::endl;
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -137,14 +177,16 @@ int main() {
           msgJson["mpc_y"] = mpc_y_vals;
 
           //Display the waypoints/reference line
-          vector<double> next_x_vals;
-          vector<double> next_y_vals;
+          // vector<double> next_x_vals;
+          // vector<double> next_y_vals;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
 
-          msgJson["next_x"] = next_x_vals;
-          msgJson["next_y"] = next_y_vals;
+          // CalculateWaypoints(poly, 0, 0, next_x_vals, next_y_vals);
+
+          msgJson["next_x"] = ptsx;
+          msgJson["next_y"] = ptsy;
 
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
