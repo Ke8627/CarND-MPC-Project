@@ -106,20 +106,24 @@ void CalculateWaypoints(const Eigen::VectorXd& poly,
   }
 }
 
-void Translate(vector<double>& ptsx, 
-               vector<double>& ptsy, 
-               double xshift, 
-               double yshift, 
-               double psi)
+void GlobalToCar(vector<double>& ptsx,
+                 vector<double>& ptsy,
+                 double xshift,
+                 double yshift,
+                 double psi)
 {
+  // This is based on driveWell's post at:
+  // https://discussions.udacity.com/t/not-able-to-display-trajectory-and-reference-paths-in-the-simulator/248545/9
   for (size_t i = 0; i < ptsx.size(); ++i)
   {
     const double& x = ptsx[i];
     const double& y = ptsy[i];
     double cospsi = cos(psi);
     double sinpsi = sin(psi);
-    double xnew = (x - xshift) * cospsi - (y - yshift) * sinpsi;
-    double ynew = (x - xshift) * sinpsi - (y - yshift) * cospsi;
+    double xtrans = x - xshift;
+    double ytrans = y - yshift;
+    double xnew = xtrans * cospsi + ytrans * sinpsi;
+    double ynew = -xtrans * sinpsi + ytrans * cospsi;
 
     ptsx[i] = xnew;
     ptsy[i] = ynew;
@@ -153,7 +157,7 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
-          Translate(ptsx, ptsy, px, py, -psi);
+          GlobalToCar(ptsx, ptsy, px, py, psi);
 
           printList(ptsx, "ptsx");
           printList(ptsy, "ptsy");
