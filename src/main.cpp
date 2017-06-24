@@ -106,11 +106,23 @@ void CalculateWaypoints(const Eigen::VectorXd& poly,
   }
 }
 
-void Translate(vector<double>& pts, double shift)
+void Translate(vector<double>& ptsx, 
+               vector<double>& ptsy, 
+               double xshift, 
+               double yshift, 
+               double psi)
 {
-  for (auto& p : pts)
+  for (size_t i = 0; i < ptsx.size(); ++i)
   {
-    p -= shift;
+    const double& x = ptsx[i];
+    const double& y = ptsy[i];
+    double cospsi = cos(psi);
+    double sinpsi = sin(psi);
+    double xnew = (x - xshift) * cospsi - (y - yshift) * sinpsi;
+    double ynew = (x - xshift) * sinpsi - (y - yshift) * cospsi;
+
+    ptsx[i] = xnew;
+    ptsy[i] = ynew;
   }
 }
 
@@ -141,12 +153,12 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
-          Translate(ptsx, px);
-          Translate(ptsy, py);
+          Translate(ptsx, ptsy, px, py, -psi);
 
           printList(ptsx, "ptsx");
           printList(ptsy, "ptsy");
-          std::cout << "px, py, psi, v: " << px << ',' << py << ',' << psi << ',' << v << std::endl;
+          std::cout << "px, py, v: " << px << ',' << py << ',' << v;
+          std::cout << "psi: " << rad2deg(psi) << "psi_rad:" << psi << std::endl;
 
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
           std::cout << "poly: " << poly[0] << ',' << poly[1] << ',' << poly[2] << ',' << poly[3] << std::endl;
