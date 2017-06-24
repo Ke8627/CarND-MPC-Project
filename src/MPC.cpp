@@ -69,7 +69,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // For example: If the state is a 4 element vector, the actuators is a 2
   // element vector and there are 10 timesteps. The number of variables is:
   //
-  // 4 * 10 + 2 * 9
+  // 6 * 10 + 2 * 9
   size_t n_vars = 6 * N + 2 * (N - 1);
   // TODO: Set the number of constraints
   size_t n_constraints = 0;
@@ -79,6 +79,20 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   Dvector vars(n_vars);
   for (size_t i = 0; i < n_vars; i++) {
     vars[i] = 0;
+  }
+
+  /*
+  const size_t x_start = 0;
+  const size_t y_start = 1 * N;
+  const size_t psi_start = 2 * N;
+  const size_t v_start = 3 * N;
+  const size_t cte_start = 4 * N;
+  const size_t epsi_start = 5 * N;
+  */
+
+  for (int i = 0; i < state.size(); ++i)
+  {
+    vars[i * N] = state[i];
   }
 
   Dvector vars_lowerbound(n_vars);
