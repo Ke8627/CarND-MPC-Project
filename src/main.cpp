@@ -210,6 +210,11 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
+          Eigen::VectorXd state(6);
+          state << px, py, psi, v, cte, epsi;
+
+          auto actuations = mpc.Solve(state, poly);
+
           double steer_value = 0;
           double throttle_value = 0.3;
 
