@@ -65,6 +65,17 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
   return result;
 }
 
+Eigen::VectorXd CalcDerivative(const Eigen::VectorXd& poly)
+{
+  const int order = poly.size() - 1;
+  Eigen::VectorXd derivative(order);
+  for (int i = 0; i < order; ++i)
+  {
+    derivative[i] = poly[i] * (order - i);
+  }
+  return derivative;
+}
+
 template<typename T>
 void printList(const vector<T>& list, const char* name)
 {
@@ -76,6 +87,24 @@ void printList(const vector<T>& list, const char* name)
   for (const T& t: list)
   {
     cout << t;
+  }
+  cout << endl;
+}
+
+void printVec(const Eigen::VectorXd& v, const char* name)
+{
+  if (name != nullptr)
+  {
+    cout << name << ":";
+  }
+
+  for (int i = 0; i < v.size(); ++i)
+  {
+    if (i > 0)
+    {
+      cout << ',';
+    }
+    cout << v[i];
   }
   cout << endl;
 }
@@ -163,6 +192,10 @@ int main() {
           GlobalToCar(ptsx, ptsy, px, py, psi);
 
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
+          auto derivative = CalcDerivative(poly);
+
+          printVec(poly, "poly");
+          printVec(derivative, "derivative");
 
           // Polynomial is from car's perspective, so cte is f(0).
           double cte = polyeval(poly, 0);
