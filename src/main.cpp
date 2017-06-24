@@ -71,7 +71,7 @@ Eigen::VectorXd CalcDerivative(const Eigen::VectorXd& poly)
   Eigen::VectorXd derivative(order);
   for (int i = 0; i < order; ++i)
   {
-    derivative[i] = poly[i] * (order - i);
+    derivative[i] = poly[i + 1] * (order + 1);
   }
   return derivative;
 }
@@ -184,6 +184,7 @@ int main() {
           double px = j[1]["x"];
           double py = j[1]["y"];
           double psi = j[1]["psi"];
+          // double psi_unity = j[1]["psi_unity"];
           double v = j[1]["speed"];
 
           // Workaround unused warning.
@@ -194,12 +195,14 @@ int main() {
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
           auto derivative = CalcDerivative(poly);
 
+          double epsi = -atan(polyeval(derivative, 0));
+
           printVec(poly, "poly");
           printVec(derivative, "derivative");
 
           // Polynomial is from car's perspective, so cte is f(0).
           double cte = polyeval(poly, 0);
-          std::cout << "cte: " << cte << std::endl;
+          cout << "cte: " << cte << "epsi: " << epsi << endl;
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
