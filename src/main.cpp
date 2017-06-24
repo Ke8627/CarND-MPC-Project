@@ -157,15 +157,16 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
+          // Workaround unused warning.
+          v = v;
+
           GlobalToCar(ptsx, ptsy, px, py, psi);
 
-          printList(ptsx, "ptsx");
-          printList(ptsy, "ptsy");
-          std::cout << "px, py, v: " << px << ',' << py << ',' << v;
-          std::cout << "psi: " << rad2deg(psi) << "psi_rad:" << psi << std::endl;
-
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
-          std::cout << "poly: " << poly[0] << ',' << poly[1] << ',' << poly[2] << ',' << poly[3] << std::endl;
+
+          // Polynomial is from car's perspective, so cte is f(0).
+          double cte = polyeval(poly, 0);
+          std::cout << "cte: " << cte << std::endl;
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
