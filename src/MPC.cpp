@@ -33,6 +33,7 @@ class FG_eval {
     // `fg` a vector of the cost constraints, `vars` is a vector of variable values (state & actuators)
     // NOTE: You'll probably go back and forth between this function and
     // the Solver function below.
+    /*
     for (int t = 1; t < N; t++) {
       AD<double> x1 = vars[x_start + t];
 
@@ -50,6 +51,7 @@ class FG_eval {
       // TODO: Setup the rest of the model constraints
       fg[1 + x_start + i] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
     }
+    */
   }
 };
 
