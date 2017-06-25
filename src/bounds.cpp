@@ -6,9 +6,9 @@ BoundSetter::BoundSetter(Dvector& vars_lowerbound, Dvector& vars_upperbound)
 {
 }
 
-void BoundSetter::SetBounds(size_t start_i, 
-                            size_t end_i, 
-                            double lower, 
+void BoundSetter::SetBounds(size_t start_i,
+                            size_t end_i,
+                            double lower,
                             double upper)
 {
   SetBound(m_vars_lowerbound, start_i, end_i, lower);

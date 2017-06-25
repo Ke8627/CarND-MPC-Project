@@ -63,30 +63,6 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-typedef CPPAD_TESTVECTOR(double) Dvector;
-
-void SetBound(Dvector& var_bound,
-              size_t start_i,
-              size_t end_i,
-              double bound)
-{
-  for (size_t i = start_i; i < end_i; ++i)
-  {
-    var_bound[i] = bound;
-  }
-}
-
-void SetBounds(Dvector& vars_lowerbound,
-               Dvector& vars_upperbound,
-               size_t start_i,
-               size_t end_i,
-               double lower,
-               double upper)
-{
-  SetBound(vars_lowerbound, start_i, end_i, lower);
-  SetBound(vars_upperbound, start_i, end_i, upper);
-}
-
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
   typedef CPPAD_TESTVECTOR(double) Dvector;
