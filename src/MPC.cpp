@@ -1,4 +1,6 @@
 #include "MPC.h"
+#include "bounds.h"
+#include "util.h"
 #include <cppad/cppad.hpp>
 #include <cppad/ipopt/solve.hpp>
 #include "Eigen-3.3/Eigen/Core"
@@ -61,6 +63,30 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
+typedef CPPAD_TESTVECTOR(double) Dvector;
+
+void SetBound(Dvector& var_bound,
+              size_t start_i,
+              size_t end_i,
+              double bound)
+{
+  for (size_t i = start_i; i < end_i; ++i)
+  {
+    var_bound[i] = bound;
+  }
+}
+
+void SetBounds(Dvector& vars_lowerbound,
+               Dvector& vars_upperbound,
+               size_t start_i,
+               size_t end_i,
+               double lower,
+               double upper)
+{
+  SetBound(vars_lowerbound, start_i, end_i, lower);
+  SetBound(vars_upperbound, start_i, end_i, upper);
+}
+
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
   typedef CPPAD_TESTVECTOR(double) Dvector;
@@ -81,14 +107,14 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     vars[i] = 0;
   }
 
-  /*
   const size_t x_start = 0;
   const size_t y_start = 1 * N;
   const size_t psi_start = 2 * N;
   const size_t v_start = 3 * N;
   const size_t cte_start = 4 * N;
   const size_t epsi_start = 5 * N;
-  */
+  const size_t delta_start = 6 * (N - 1);
+  const size_t a_start = 7 * (N - 1);
 
   for (int i = 0; i < state.size(); ++i)
   {
@@ -97,7 +123,22 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
   Dvector vars_lowerbound(n_vars);
   Dvector vars_upperbound(n_vars);
-  // TODO: Set lower and upper limits for variables.
+
+  // Set lower and upper limits for variables.
+
+  static const double max_angle_rad = deg2rad(180);
+  static const double max_steer_rad = deg2rad(25);
+
+  BoundSetter bounds(vars_lowerbound, vars_upperbound);
+
+  bounds.SetBounds(x_start, y_start, numeric_limits<double>::min(), numeric_limits<double>::max());
+  bounds.SetBounds(y_start, psi_start, numeric_limits<double>::min(), numeric_limits<double>::max());
+  bounds.SetBounds(psi_start, v_start, -max_angle_rad, max_angle_rad);
+  bounds.SetBounds(v_start, cte_start, 0, 60);
+  bounds.SetBounds(cte_start, epsi_start, numeric_limits<double>::min(), numeric_limits<double>::max());
+  bounds.SetBounds(epsi_start, delta_start, -max_angle_rad, max_angle_rad);
+  bounds.SetBounds(delta_start, a_start, -max_steer_rad, max_steer_rad);
+  bounds.SetBounds(a_start, n_vars, -1, 1);
 
   // Lower and upper limits for the constraints
   // Should be 0 besides initial state.
