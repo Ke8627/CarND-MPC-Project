@@ -8,7 +8,7 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 25;
+size_t N = 10;
 double dt = 0.05;
 
 // This value assumes the model presented in the classroom is used.
@@ -22,6 +22,17 @@ double dt = 0.05;
 //
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
+
+const size_t x_start = 0;
+const size_t y_start = 1 * N;
+const size_t psi_start = 2 * N;
+const size_t v_start = 3 * N;
+const size_t cte_start = 4 * N;
+const size_t epsi_start = 5 * N;
+const size_t delta_start = 6 * N;
+const size_t a_start = (7 * N) - 1;
+
+const double ref_v = 30;
 
 class FG_eval {
  public:
@@ -54,6 +65,86 @@ class FG_eval {
       fg[1 + x_start + i] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
     }
     */
+
+    cout << 'N' << N << endl;
+
+    fg[0] = 0;
+
+    // Cost function
+    // TODO: Define the cost related the reference state and
+    // any anything you think may be beneficial.
+
+    // The part of the cost based on the reference state.
+    for (size_t t = 0; t < N; t++) {
+      fg[0] += CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+    }
+
+    // Minimize the use of actuators.
+    for (size_t t = 0; t < N - 1; t++) {
+      fg[0] += CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += CppAD::pow(vars[a_start + t], 2);
+    }
+
+    // Minimize the value gap between sequential actuations.
+    for (size_t t = 0; t < N - 2; t++) {
+      // cout << "ds,t,1" << delta_start << ',' << t << ',' << 1 
+      //     << "as+t+1" << a_start + t + 1 << endl;
+      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+    }
+
+    fg[1 + x_start] = vars[x_start];
+    fg[1 + y_start] = vars[y_start];
+    fg[1 + psi_start] = vars[psi_start];
+    fg[1 + v_start] = vars[v_start];
+    fg[1 + cte_start] = vars[cte_start];
+    fg[1 + epsi_start] = vars[epsi_start];
+
+    for (size_t t = 1; t < N; t++) {
+      // The state at time t+1 .
+      AD<double> x1 = vars[x_start + t];
+      AD<double> y1 = vars[y_start + t];
+      AD<double> psi1 = vars[psi_start + t];
+      AD<double> v1 = vars[v_start + t];
+      AD<double> cte1 = vars[cte_start + t];
+      AD<double> epsi1 = vars[epsi_start + t];
+
+      // The state at time t.
+      AD<double> x0 = vars[x_start + t - 1];
+      AD<double> y0 = vars[y_start + t - 1];
+      AD<double> psi0 = vars[psi_start + t - 1];
+      AD<double> v0 = vars[v_start + t - 1];
+      AD<double> cte0 = vars[cte_start + t - 1];
+      AD<double> epsi0 = vars[epsi_start + t - 1];
+
+      // Only consider the actuation at time t.
+      AD<double> delta0 = vars[delta_start + t - 1];
+      AD<double> a0 = vars[a_start + t - 1];
+
+      AD<double> f0 = coeffs[0] + coeffs[1] * x0;
+      AD<double> psides0 = CppAD::atan(coeffs[1]);
+
+      // Here's `x` to get you started.
+      // The idea here is to constraint this value to be 0.
+      //
+      // Recall the equations for the model:
+      // x_[t] = x[t-1] + v[t-1] * cos(psi[t-1]) * dt
+      // y_[t] = y[t-1] + v[t-1] * sin(psi[t-1]) * dt
+      // psi_[t] = psi[t-1] + v[t-1] / Lf * delta[t-1] * dt
+      // v_[t] = v[t-1] + a[t-1] * dt
+      // cte[t] = f(x[t-1]) - y[t-1] + v[t-1] * sin(epsi[t-1]) * dt
+      // epsi[t] = psi[t] - psides[t-1] + v[t-1] * delta[t-1] / Lf * dt
+      fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
+      fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
+      fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
+      fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
+      fg[1 + cte_start + t] =
+          cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
+      fg[1 + epsi_start + t] =
+          epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
+    }
   }
 };
 
@@ -73,8 +164,9 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   //
   // 6 * 10 + 2 * 9
   size_t n_vars = 6 * N + 2 * (N - 1);
+  cout << n_vars << endl;
   // TODO: Set the number of constraints
-  size_t n_constraints = 0;
+  size_t n_constraints = 6 * N;
 
   // Initial value of the independent variables.
   // SHOULD BE 0 besides initial state.
@@ -82,15 +174,6 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   for (size_t i = 0; i < n_vars; i++) {
     vars[i] = 0;
   }
-
-  const size_t x_start = 0;
-  const size_t y_start = 1 * N;
-  const size_t psi_start = 2 * N;
-  const size_t v_start = 3 * N;
-  const size_t cte_start = 4 * N;
-  const size_t epsi_start = 5 * N;
-  const size_t delta_start = 6 * (N - 1);
-  const size_t a_start = 7 * (N - 1);
 
   for (int i = 0; i < state.size(); ++i)
   {
