@@ -189,12 +189,12 @@ int main() {
           GlobalToCar(ptsx, ptsy, px, py, psi);
 
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
-          auto derivative = CalcDerivative(poly);
+          // auto derivative = CalcDerivative(poly);
 
-          double epsi = -atan(polyeval(derivative, 0));
+          double epsi = -atan(poly[1]);
 
           printVec(poly, "poly");
-          printVec(derivative, "derivative");
+          // printVec(derivative, "derivative");
 
           // Polynomial is from car's perspective, so cte is f(0).
           double cte = polyeval(poly, 0);
@@ -211,8 +211,9 @@ int main() {
 
           auto actuations = mpc.Solve(state, poly);
 
-          double steer_value = 0;
-          double throttle_value = 0.3;
+          double steer_value = - actuations[0] / deg2rad(25);
+          double throttle_value = actuations[1];
+          cout << "steer: " << steer_value << " throttle: " << throttle_value << endl;
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
