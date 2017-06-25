@@ -155,6 +155,20 @@ void GlobalToCar(vector<double>& ptsx,
   }
 }
 
+void PredictState(double latencySeconds,
+                  double& x,
+                  double& y,
+                  double& psi,
+                  double& v,
+                  double delta,
+                  double acceleration)
+{
+  x = x * v * cos(psi) * latencySeconds;
+  y = y * v * sin(psi) * latencySeconds;
+  psi = psi * v * delta/Lf * latencySeconds;
+  v = v + acceleration * latencySeconds;
+}
+
 int main() {
   uWS::Hub h;
 
@@ -182,9 +196,19 @@ int main() {
           double psi = j[1]["psi"];
           // double psi_unity = j[1]["psi_unity"];
           double v = j[1]["speed"];
+          double delta = j[1]["steering_angle"];
+          double acceleration = j[1]["throttle"];
 
           // Workaround unused warning.
           v = v;
+
+          vector<double> waypointsx(ptsx);
+          vector<double> waypointsy(ptsy);
+
+          GlobalToCar(waypointsx, waypointsy, px, py, psi);
+
+          double latencySeconds = 0.1;
+          PredictState(latencySeconds, px, py, psi, v, delta, acceleration);
 
           GlobalToCar(ptsx, ptsy, px, py, psi);
 
@@ -240,8 +264,8 @@ int main() {
 
           // CalculateWaypoints(poly, 0, 0, next_x_vals, next_y_vals);
 
-          msgJson["next_x"] = ptsx;
-          msgJson["next_y"] = ptsy;
+          msgJson["next_x"] = waypointsx;
+          msgJson["next_y"] = waypointsy;
 
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";

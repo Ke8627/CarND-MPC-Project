@@ -6,6 +6,8 @@
 
 using namespace std;
 
+extern const double Lf;
+
 class MPC {
  public:
   MPC();
