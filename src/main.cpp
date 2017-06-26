@@ -195,12 +195,13 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           // double psi_unity = j[1]["psi_unity"];
-          double v = j[1]["speed"];
+          double mph = j[1]["speed"];
           double delta = j[1]["steering_angle"];
           double acceleration = j[1]["throttle"];
 
           // Workaround unused warning.
-          v = v;
+          static const double mps_in_mph = 0.44704;
+          double v = mps_in_mph * mph;
 
           vector<double> waypointsx(ptsx);
           vector<double> waypointsy(ptsy);
