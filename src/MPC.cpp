@@ -38,7 +38,17 @@ class FG_eval {
  public:
   // Fitted polynomial coefficients
   Eigen::VectorXd coeffs;
-  FG_eval(Eigen::VectorXd coeffs) { this->coeffs = coeffs; }
+
+  double target_x;
+  double target_y;
+
+  FG_eval(Eigen::VectorXd coeffs)
+  {
+    this->coeffs = coeffs;
+
+    // Target 10 meters forward.
+    target_x = 10.0;
+  }
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
   void operator()(ADvector& fg, const ADvector& vars) {
@@ -55,20 +65,20 @@ class FG_eval {
 
     // The part of the cost based on the reference state.
     for (size_t t = 0; t < N; t++) {
-      fg[0] += CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += 1000 * CppAD::pow(vars[cte_start + t], 2);
       fg[0] += CppAD::pow(vars[epsi_start + t], 2);
       fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
     for (size_t t = 0; t < N - 1; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 1000 * CppAD::pow(vars[delta_start + t], 2);
       fg[0] += CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 1000 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
       fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
@@ -133,7 +143,11 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
+vector<double> MPC::Solve(Eigen::VectorXd state,
+                          Eigen::VectorXd coeffs,
+                          vector<double>& mpc_x_vals,
+                          vector<double>& mpc_y_vals)
+{
   bool ok = true;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
@@ -229,6 +243,12 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
   auto delta = solution.x[delta_start];
   auto a = solution.x[a_start];
+
+  for (size_t i = 0; i < N; ++i)
+  {
+    mpc_x_vals.push_back(solution.x[i + x_start]);
+    mpc_y_vals.push_back(solution.x[i + y_start]);
+  }
 
   // Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
