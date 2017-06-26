@@ -163,9 +163,9 @@ void PredictState(double latencySeconds,
                   double delta,
                   double acceleration)
 {
-  x = x * v * cos(psi) * latencySeconds;
-  y = y * v * sin(psi) * latencySeconds;
-  psi = psi * v * delta/Lf * latencySeconds;
+  x = x + v * cos(psi) * latencySeconds;
+  y = y + v * sin(psi) * latencySeconds;
+  psi = psi + v * delta/Lf * latencySeconds;
   v = v + acceleration * latencySeconds;
 }
 

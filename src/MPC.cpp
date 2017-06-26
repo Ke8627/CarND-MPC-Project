@@ -23,14 +23,14 @@ double dt = 0.05;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-const size_t x_start = 0;
-const size_t y_start = 1 * N;
-const size_t psi_start = 2 * N;
-const size_t v_start = 3 * N;
-const size_t cte_start = 4 * N;
-const size_t epsi_start = 5 * N;
-const size_t delta_start = 6 * N;
-const size_t a_start = (7 * N) - 1;
+static const size_t x_start = 0;
+static const size_t y_start = x_start + N;
+static const size_t psi_start = y_start + N;
+static const size_t v_start = psi_start + N;
+static const size_t cte_start = v_start + N;
+static const size_t epsi_start = cte_start + N;
+static const size_t delta_start = epsi_start + N;
+static const size_t a_start = delta_start + N - 1;
 
 const double ref_v = 30;
 
@@ -121,8 +121,10 @@ class FG_eval {
       AD<double> delta0 = vars[delta_start + t - 1];
       AD<double> a0 = vars[a_start + t - 1];
 
-      AD<double> f0 = coeffs[0] + coeffs[1] * x0;
-      AD<double> psides0 = CppAD::atan(coeffs[1]);
+      // Use 3rd-order polynomial as recommended by Alex Cui.
+      // https://discussions.udacity.com/t/cars-keeps-braking-and-moving-back-and-foth/263282/16?u=writetojeffrey
+      AD<double> f0 = coeffs[0] + coeffs[1]*x0 + coeffs[2]*x0*x0 + coeffs[3]*x0*x0*x0;
+      AD<double> psides0 = CppAD::atan(coeffs[1] + 2*coeffs[2]*x0 + 3*coeffs[3]*x0*x0);
 
       // Here's `x` to get you started.
       // The idea here is to constraint this value to be 0.
@@ -183,19 +185,17 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
   // Set lower and upper limits for variables.
 
-  static const double max_angle_rad = deg2rad(180);
   static const double max_steer_rad = deg2rad(25);
 
   BoundSetter bounds(vars_lowerbound, vars_upperbound);
 
-  bounds.SetBounds(x_start, y_start, numeric_limits<double>::min(), numeric_limits<double>::max());
-  bounds.SetBounds(y_start, psi_start, numeric_limits<double>::min(), numeric_limits<double>::max());
-  bounds.SetBounds(psi_start, v_start, -max_angle_rad, max_angle_rad);
-  bounds.SetBounds(v_start, cte_start, 0, 60);
-  bounds.SetBounds(cte_start, epsi_start, numeric_limits<double>::min(), numeric_limits<double>::max());
-  bounds.SetBounds(epsi_start, delta_start, -max_angle_rad, max_angle_rad);
+  // Set all non-actuators upper and lowerlimits
+  // to the max negative and positive values.
+  bounds.SetBounds(0, delta_start, numeric_limits<double>::min(), numeric_limits<double>::max());
+
+  // Set actuator limits.
   bounds.SetBounds(delta_start, a_start, -max_steer_rad, max_steer_rad);
-  bounds.SetBounds(a_start, n_vars, -1, 1);
+  bounds.SetBounds(a_start, n_vars, -1.0, 1.0);
 
   // Lower and upper limits for the constraints
   // Should be 0 besides initial state.
@@ -204,6 +204,12 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   for (size_t i = 0; i < n_constraints; i++) {
     constraints_lowerbound[i] = 0;
     constraints_upperbound[i] = 0;
+  }
+
+  for (int i = 0; i < state.size(); ++i)
+  {
+    constraints_lowerbound[i * N] = state[i];
+    constraints_upperbound[i * N] = state[i];
   }
 
   // object that computes objective and constraints
