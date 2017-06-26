@@ -155,18 +155,26 @@ void GlobalToCar(vector<double>& ptsx,
   }
 }
 
-void PredictState(double latencySeconds,
-                  double& x,
-                  double& y,
-                  double& psi,
-                  double& v,
-                  double delta,
-                  double acceleration)
+struct State
 {
-  x = x + v * cos(psi) * latencySeconds;
-  y = y + v * sin(psi) * latencySeconds;
-  psi = psi + v * delta/Lf * latencySeconds;
-  v = v + acceleration * latencySeconds;
+  const double x;
+  const double y;
+  const double psi;
+  const double v;
+
+  State Predict(double latencySeconds,
+                double delta,
+                double acceleration) const;
+};
+
+State State::Predict(double latencySeconds,
+                     double delta,
+                     double acceleration) const
+{
+  return State { x + v * cos(psi) * latencySeconds,
+                 y + v * sin(psi) * latencySeconds,
+                 psi + v * delta/Lf * latencySeconds,
+                 v + acceleration * latencySeconds };
 }
 
 int main() {
@@ -208,13 +216,15 @@ int main() {
 
           GlobalToCar(waypointsx, waypointsy, px, py, psi);
 
-          double latencySeconds = 0.1;
-          PredictState(latencySeconds, px, py, psi, v, delta, acceleration);
+          State current { px, py, psi, v };
 
-          GlobalToCar(ptsx, ptsy, px, py, psi);
+          double latencySeconds = 0.1;
+
+          State future = current.Predict(latencySeconds, delta, acceleration);
+
+          GlobalToCar(ptsx, ptsy, future.x, future.y, psi);
 
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
-          // auto derivative = CalcDerivative(poly);
 
           double epsi = -atan(poly[1]);
 
@@ -232,7 +242,7 @@ int main() {
           *
           */
           Eigen::VectorXd state(6);
-          state << px, py, psi, v, cte, epsi;
+          state << future.x, future.y, future.psi, future.v, cte, epsi;
 
           auto actuations = mpc.Solve(state, poly);
 
