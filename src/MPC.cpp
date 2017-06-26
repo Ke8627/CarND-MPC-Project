@@ -7,9 +7,9 @@
 
 using CppAD::AD;
 
-// TODO: Set the timestep length and duration
-size_t N = 10;
-double dt = 0.05;
+// Set the timestep length and duration
+size_t N = 20;
+double dt = 0.2;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -42,36 +42,15 @@ class FG_eval {
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
   void operator()(ADvector& fg, const ADvector& vars) {
-    // TODO: implement MPC
+    // implement MPC
     // `fg` a vector of the cost constraints, `vars` is a vector of variable values (state & actuators)
     // NOTE: You'll probably go back and forth between this function and
     // the Solver function below.
-    /*
-    for (int t = 1; t < N; t++) {
-      AD<double> x1 = vars[x_start + t];
-
-      AD<double> x0 = vars[x_start + t - 1];
-      AD<double> psi0 = vars[psi_start + t - 1];
-      AD<double> v0 = vars[v_start + t - 1];
-
-      // Here's `x` to get you started.
-      // The idea here is to constraint this value to be 0.
-      //
-      // NOTE: The use of `AD<double>` and use of `CppAD`!
-      // This is also CppAD can compute derivatives and pass
-      // these to the solver.
-
-      // TODO: Setup the rest of the model constraints
-      fg[1 + x_start + i] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
-    }
-    */
-
-    cout << 'N' << N << endl;
 
     fg[0] = 0;
 
     // Cost function
-    // TODO: Define the cost related the reference state and
+    // Define the cost related the reference state and
     // any anything you think may be beneficial.
 
     // The part of the cost based on the reference state.
@@ -158,14 +137,14 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
-  // TODO: Set the number of model variables (includes both states and inputs).
+  // Set the number of model variables (includes both states and inputs).
   // For example: If the state is a 4 element vector, the actuators is a 2
   // element vector and there are 10 timesteps. The number of variables is:
   //
   // 6 * 10 + 2 * 9
   size_t n_vars = 6 * N + 2 * (N - 1);
   cout << n_vars << endl;
-  // TODO: Set the number of constraints
+  // Set the number of constraints
   size_t n_constraints = 6 * N;
 
   // Initial value of the independent variables.
@@ -251,7 +230,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   auto delta = solution.x[delta_start];
   auto a = solution.x[a_start];
 
-  // TODO: Return the first actuator values. The variables can be accessed with
+  // Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
   //
   // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
