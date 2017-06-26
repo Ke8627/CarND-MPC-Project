@@ -195,7 +195,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
   // Set actuator limits.
   bounds.SetBounds(delta_start, a_start, -max_steer_rad, max_steer_rad);
-  bounds.SetBounds(a_start, n_vars, -1.0, 1.0);
+  bounds.SetBounds(a_start, n_vars, 0.3, 1.0);
 
   // Lower and upper limits for the constraints
   // Should be 0 besides initial state.
