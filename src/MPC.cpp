@@ -185,7 +185,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state,
 
   // Set all non-actuators upper and lowerlimits
   // to the max negative and positive values.
-  bounds.SetBounds(0, delta_start, numeric_limits<double>::min(), numeric_limits<double>::max());
+  bounds.SetBounds(0, delta_start, -numeric_limits<double>::max(), numeric_limits<double>::max());
 
   // Set actuator limits.
   bounds.SetBounds(delta_start, a_start, -max_steer_rad, max_steer_rad);

@@ -172,7 +172,8 @@ int main() {
           // double psi_unity = j[1]["psi_unity"];
           double mph = j[1]["speed"];
           // https://discussions.udacity.com/t/how-to-incorporate-latency-into-the-model/257391/35
-          double -delta = j[1]["steering_angle"];
+          double delta = j[1]["steering_angle"];
+          delta = -delta;
           double acceleration = j[1]["throttle"];
 
           // Workaround unused warning.
