@@ -8,7 +8,7 @@ Self-Driving Car Engineer Nanodegree Program
 ### The Model
 
 - State: x, y, psi, v, cte, epsi
-- Actuators: change in steering angle, acceleration
+- Actuators: change in steering angle (a.k.a. delta), acceleration (a.k.a. throttle)
 - Update equations:
   - x[t] = x[t-1] + v[t-1] * cos(psi[t-1]) * dt
   - y[t] = y[t-1] + v[t-1] * sin(psi[t-1]) * dt
@@ -24,7 +24,13 @@ Self-Driving Car Engineer Nanodegree Program
 
 ### Polynomial Fitting and MPC Preprocessing
 
+- Prior to fitting a 3rd-order polynomial, my implementation transforms the waypoints and the vehicle state to the car's perspective.
+- The steering angle read from the simulator is negated to match the model's orientation of left and right.
+
 ### Model Predictive Control with Latency
+
+- My implementation handles a 100 millisecond latency.
+- It predicts the car's position after 100 milliseconds, then uses that position as the input state to the model predictive controller
 
 ## Dependencies
 
