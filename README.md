@@ -3,6 +3,27 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Reflections
+
+### The Model
+
+- State: x, y, psi, v, cte, epsi
+- Actuators: change in steering angle, acceleration
+- Update equations:
+
+x[t] = x[t-1] + v[t-1] * cos(psi[t-1]) * dt
+y[t] = y[t-1] + v[t-1] * sin(psi[t-1]) * dt
+psi[t] = psi[t-1] + v[t-1] / Lf * delta[t-1] * dt
+v[t] = v[t-1] + a[t-1] * dt
+cte[t] = f(x[t-1]) - y[t-1] + v[t-1] * sin(epsi[t-1]) * dt
+epsi[t] = psi[t] - psides[t-1] + v[t-1] * delta[t-1] / Lf * dt
+
+### Timestep Length and Elapsed Duration (N & dt)
+
+### Polynomial Fitting and MPC Preprocessing
+
+### Model Predictive Control with Latency
+
 ## Dependencies
 
 * cmake >= 3.5
