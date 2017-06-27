@@ -171,7 +171,8 @@ int main() {
           double psi = j[1]["psi"];
           // double psi_unity = j[1]["psi_unity"];
           double mph = j[1]["speed"];
-          double delta = j[1]["steering_angle"];
+          // https://discussions.udacity.com/t/how-to-incorporate-latency-into-the-model/257391/35
+          double -delta = j[1]["steering_angle"];
           double acceleration = j[1]["throttle"];
 
           // Workaround unused warning.
@@ -189,7 +190,7 @@ int main() {
 
           State future = current.Predict(latencySeconds, delta, acceleration);
 
-          GlobalToCar(ptsx, ptsy, future.x, future.y, psi);
+          GlobalToCar(ptsx, ptsy, future.x, future.y, future.psi);
 
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
 

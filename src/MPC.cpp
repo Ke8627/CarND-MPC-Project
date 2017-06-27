@@ -32,7 +32,7 @@ static const size_t epsi_start = cte_start + N;
 static const size_t delta_start = epsi_start + N;
 static const size_t a_start = delta_start + N - 1;
 
-const double ref_v = 30;
+const double ref_v = 20;
 
 class FG_eval {
  public:
@@ -47,7 +47,8 @@ class FG_eval {
     this->coeffs = coeffs;
 
     // Target 10 meters forward.
-    target_x = 10.0;
+    target_x = 50.0;
+    target_y = polyeval(coeffs, target_x);
   }
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
@@ -65,7 +66,7 @@ class FG_eval {
 
     // The part of the cost based on the reference state.
     for (size_t t = 0; t < N; t++) {
-      fg[0] += 1000 * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += CppAD::pow(vars[cte_start + t], 2);
       fg[0] += CppAD::pow(vars[epsi_start + t], 2);
       fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
@@ -188,7 +189,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state,
 
   // Set actuator limits.
   bounds.SetBounds(delta_start, a_start, -max_steer_rad, max_steer_rad);
-  bounds.SetBounds(a_start, n_vars, 0.3, 1.0);
+  bounds.SetBounds(a_start, n_vars, 0.3, 0.5);
 
   // Lower and upper limits for the constraints
   // Should be 0 besides initial state.
