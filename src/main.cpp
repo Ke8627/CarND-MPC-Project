@@ -206,8 +206,6 @@ int main() {
 
           GlobalToCar(ptsx, ptsy, future.x, future.y, future.psi);
 
-          FilterToForward(ptsx, ptsy);
-
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
 
           double epsi = -atan(poly[1]);
