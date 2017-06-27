@@ -183,6 +183,7 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double mph = j[1]["speed"];
+          // Negate the steering angle reported by the simulator to match the model.
           // https://discussions.udacity.com/t/how-to-incorporate-latency-into-the-model/257391/35
           double delta = j[1]["steering_angle"];
           delta = -delta;

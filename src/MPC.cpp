@@ -107,7 +107,7 @@ class FG_eval {
       AD<double> delta0 = vars[delta_start + t - 1];
       AD<double> a0 = vars[a_start + t - 1];
 
-      // Use 3rd-order polynomial as recommended by Alex Cui.
+      // Use 3rd-order polynomial instead of 1st-order as recommended by Alex Cui.
       // https://discussions.udacity.com/t/cars-keeps-braking-and-moving-back-and-foth/263282/16
       AD<double> f0 = coeffs[0] + coeffs[1]*x0 + coeffs[2]*x0*x0 + coeffs[3]*x0*x0*x0;
       AD<double> psides0 = CppAD::atan(coeffs[1] + 2*coeffs[2]*x0 + 3*coeffs[3]*x0*x0);
