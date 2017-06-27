@@ -144,6 +144,19 @@ State State::Predict(double latencySeconds,
                  v + acceleration * latencySeconds };
 }
 
+void FilterToForward(vector<double>& ptsx,
+                     vector<double>& ptsy)
+{
+  for (int i = ptsx.size() - 1; i >= 0; i--)
+  {
+    if (ptsx[i] < 0)
+    {
+      ptsx.erase(ptsx.begin() + i);
+      ptsy.erase(ptsy.begin() + i);
+    }
+  }
+}
+
 int main() {
   uWS::Hub h;
 
@@ -192,6 +205,8 @@ int main() {
           State future = current.Predict(latencySeconds, delta, acceleration);
 
           GlobalToCar(ptsx, ptsy, future.x, future.y, future.psi);
+
+          FilterToForward(ptsx, ptsy);
 
           auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
 
