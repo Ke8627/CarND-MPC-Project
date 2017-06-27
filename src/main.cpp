@@ -182,14 +182,12 @@ int main() {
           double px = j[1]["x"];
           double py = j[1]["y"];
           double psi = j[1]["psi"];
-          // double psi_unity = j[1]["psi_unity"];
           double mph = j[1]["speed"];
           // https://discussions.udacity.com/t/how-to-incorporate-latency-into-the-model/257391/35
           double delta = j[1]["steering_angle"];
           delta = -delta;
           double acceleration = j[1]["throttle"];
 
-          // Workaround unused warning.
           static const double mps_in_mph = 0.44704;
           double v = mps_in_mph * mph;
 
@@ -200,22 +198,20 @@ int main() {
 
           State current { px, py, psi, v };
 
-          double latencySeconds = 0.0;
+          const double latencySeconds = 0.1;
 
           State future = current.Predict(latencySeconds, delta, acceleration);
 
           GlobalToCar(ptsx, ptsy, future.x, future.y, future.psi);
 
-          auto poly = polyfit(ConvertToVectorXd(ptsx), ConvertToVectorXd(ptsy), 3);
+          auto poly = polyfit(ConvertToVectorXd(ptsx),
+                              ConvertToVectorXd(ptsy),
+                              3);
 
           double epsi = -atan(poly[1]);
 
-          printVec(poly, "poly");
-          // printVec(derivative, "derivative");
-
           // Polynomial is from car's perspective, so cte is f(0).
           double cte = polyeval(poly, 0);
-          cout << "cte: " << cte << "epsi: " << epsi << endl;
 
           /*
           * Calculate steering angle and throttle using MPC.
@@ -224,7 +220,6 @@ int main() {
           *
           */
           Eigen::VectorXd state(6);
-          // state << future.x, future.y, future.psi, future.v, cte, epsi;
           state << 0, 0, 0, future.v, cte, epsi;
 
           vector<double> mpc_x_vals;
@@ -233,7 +228,6 @@ int main() {
 
           double steer_value = - actuations[0] / deg2rad(25);
           double throttle_value = actuations[1];
-          cout << "steer: " << steer_value << " throttle: " << throttle_value << endl;
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -256,8 +250,6 @@ int main() {
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
 
-          // CalculateWaypoints(poly, 0, 0, next_x_vals, next_y_vals);
-
           msgJson["next_x"] = waypointsx;
           msgJson["next_y"] = waypointsy;
 
@@ -273,9 +265,7 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
           // SUBMITTING.
-          //
-          // TODO: Incorporate latency.
-          // this_thread::sleep_for(chrono::milliseconds(100));
+          this_thread::sleep_for(chrono::milliseconds(100));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {

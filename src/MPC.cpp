@@ -39,16 +39,9 @@ class FG_eval {
   // Fitted polynomial coefficients
   Eigen::VectorXd coeffs;
 
-  double target_x;
-  double target_y;
-
   FG_eval(Eigen::VectorXd coeffs)
   {
     this->coeffs = coeffs;
-
-    // Target 10 meters forward.
-    target_x = 50.0;
-    target_y = polyeval(coeffs, target_x);
   }
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
@@ -63,6 +56,9 @@ class FG_eval {
     // Cost function
     // Define the cost related the reference state and
     // any anything you think may be beneficial.
+
+    // Borrowed weights from Alex Cui's post:
+    // https://discussions.udacity.com/t/cost-from-actuators/275444/10
 
     // The part of the cost based on the reference state.
     for (size_t t = 0; t < N; t++) {
@@ -112,7 +108,7 @@ class FG_eval {
       AD<double> a0 = vars[a_start + t - 1];
 
       // Use 3rd-order polynomial as recommended by Alex Cui.
-      // https://discussions.udacity.com/t/cars-keeps-braking-and-moving-back-and-foth/263282/16?u=writetojeffrey
+      // https://discussions.udacity.com/t/cars-keeps-braking-and-moving-back-and-foth/263282/16
       AD<double> f0 = coeffs[0] + coeffs[1]*x0 + coeffs[2]*x0*x0 + coeffs[3]*x0*x0*x0;
       AD<double> psides0 = CppAD::atan(coeffs[1] + 2*coeffs[2]*x0 + 3*coeffs[3]*x0*x0);
 
