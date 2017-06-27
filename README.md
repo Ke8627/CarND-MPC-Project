@@ -19,6 +19,9 @@ Self-Driving Car Engineer Nanodegree Program
 
 ### Timestep Length and Elapsed Duration (N & dt)
 
+- I set N=20 and dt=0.2 thinking that predicting 4 seconds worth of movement would be sufficient to incorporate future turns into motion planning
+- I originally set N=10 and dt=0.05, but I suspected that half a second of future planning was not sufficient for effective motion planning
+
 ### Polynomial Fitting and MPC Preprocessing
 
 ### Model Predictive Control with Latency
