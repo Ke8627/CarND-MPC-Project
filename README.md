@@ -16,21 +16,26 @@ Self-Driving Car Engineer Nanodegree Program
   - v[t] = v[t-1] + a[t-1] * dt
   - cte[t] = f(x[t-1]) - y[t-1] + v[t-1] * sin(epsi[t-1]) * dt
   - epsi[t] = psi[t] - psides[t-1] + v[t-1] * delta[t-1] / Lf * dt
+  - These are implemented in `FG_eval::operator()` in `MPC.cpp`.
 
 ### Timestep Length and Elapsed Duration (N & dt)
 
-- I set N=20 and dt=0.2 thinking that predicting 4 seconds worth of movement would be sufficient to incorporate future turns into motion planning
-- I originally set N=10 and dt=0.05, but I suspected that half a second of future planning was not sufficient for effective motion planning
+- I set N=20 and dt=0.2 thinking that predicting 4 seconds worth of movement would be sufficient to incorporate future turns into motion planning.
+- I originally set N=10 and dt=0.05, but I suspected that half a second of future planning was not sufficient for effective motion planning.
+- These are set in `MPC.cpp`.
 
 ### Polynomial Fitting and MPC Preprocessing
 
-- Prior to fitting a 3rd-order polynomial, my implementation transforms the waypoints and the vehicle state to the car's perspective.
+- Prior to fitting a 3rd-order polynomial, my implementation transforms the waypoints to the car's perspective.
+  - This is implemented in `GlobalToCar()` in `main.cpp`.
 - The steering angle read from the simulator is negated to match the model's orientation of left and right.
 
 ### Model Predictive Control with Latency
 
 - My implementation handles a 100 millisecond latency.
-- It predicts the car's position after 100 milliseconds, then uses that position as the input state to the model predictive controller
+- It predicts the car's position, orientation, and velocity after 100 milliseconds, then uses that position as the input state to the model predictive controller.
+  - This is implemented in `State::Predict()` in `main.cpp`.
+- Note that the waypoints must be transformed to the car's predicted position after 100 ms before fitting a polynomial to the waypoints.
 
 ## Dependencies
 
